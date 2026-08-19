@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YoungDevs | בונים את האינטרנט של מחר</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&family=Heebo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #080810;
+    --purple: #7C3AED;
+    --purple-light: #A855F7;
+    --green: #00FF88;
+    --green-dim: #00CC6A;
+    --white: #F0F0FF;
+    --grey: #1A1A2E;
+    --grey2: #2D2D44;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Heebo', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ── CANVAS BG ── */
+  #bg-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ── VIDEO BACKGROUND ── */
+  .video-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .video-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(8,8,16,0.88) 0%, rgba(124,58,237,0.18) 50%, rgba(8,8,16,0.92) 100%);
+    z-index: 1;
+  }
+  .video-bg video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0.35;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 60px;
+    background: rgba(8,8,16,0.7);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(124,58,237,0.2);
+  }
+  .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: -1px;
+  }
+  .logo span { color: var(--purple-light); }
+  nav ul {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+  }
+  nav ul a {
+    color: rgba(240,240,255,0.7);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  nav ul a:hover { color: var(--green); }
+  .nav-cta {
+    background: var(--purple);
+    color: var(--white) !important;
+    padding: 10px 24px;
+    border-radius: 8px;
+    transition: background 0.2s, transform 0.2s !important;
+  }
+  .nav-cta:hover {
+    background: var(--purple-light) !important;
+    transform: translateY(-2px);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 140px 40px 80px;
+    overflow: hidden;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,255,136,0.1);
+    border: 1px solid rgba(0,255,136,0.3);
+    color: var(--green);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 8px 18px;
+    border-radius: 100px;
+    margin-bottom: 32px;
+    animation: pulse-border 2s infinite;
+  }
+  @keyframes pulse-border {
+    0%,100% { border-color: rgba(0,255,136,0.3); }
+    50% { border-color: rgba(0,255,136,0.8); }
+  }
+  .badge-dot {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: blink 1.2s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(48px, 8vw, 96px);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -3px;
+    margin-bottom: 24px;
+  }
+  .hero h1 .line-green { color: var(--green); display: block; }
+  .hero h1 .line-purple { color: var(--purple-light); display: block; }
+
+  .hero-sub {
+    font-size: 20px;
+    color: rgba(240,240,255,0.65);
+    max-width: 600px;
+    margin: 0 auto 48px;
+    line-height: 1.7;
+  }
+  .hero-sub strong { color: var(--white); }
+
+  .hero-btns {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--purple), var(--purple-light));
+    color: var(--white);
+    padding: 16px 40px;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 700;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 32px rgba(124,58,237,0.4);
+  }
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 48px rgba(124,58,237,0.6);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--green);
+    padding: 16px 40px;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 700;
+    text-decoration: none;
+    border: 2px solid rgba(0,255,136,0.4);
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .btn-secondary:hover {
+    border-color: var(--green);
+    background: rgba(0,255,136,0.08);
+  }
+
+  /* scroll indicator */
+  .scroll-hint {
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: rgba(240,240,255,0.35);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    animation: float 2.5s ease-in-out infinite;
+    z-index: 2;
+  }
+  .scroll-hint::after {
+    content: '';
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, rgba(0,255,136,0.5), transparent);
+  }
+  @keyframes float { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
+
+  /* ── TICKER ── */
+  .ticker-wrap {
+    position: relative;
+    z-index: 5;
+    background: rgba(124,58,237,0.15);
+    border-top: 1px solid rgba(124,58,237,0.3);
+    border-bottom: 1px solid rgba(124,58,237,0.3);
+    overflow: hidden;
+    padding: 14px 0;
+  }
+  .ticker {
+    display: flex;
+    gap: 60px;
+    animation: ticker 20s linear infinite;
+    white-space: nowrap;
+  }
+  .ticker-item {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: rgba(240,240,255,0.6);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .ticker-item span { color: var(--green); }
+  @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+  /* ── SECTIONS SHARED ── */
+  section {
+    position: relative;
+    z-index: 5;
+  }
+  .section-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  .section-title em { color: var(--purple-light); font-style: normal; }
+  .section-sub {
+    font-size: 18px;
+    color: rgba(240,240,255,0.6);
+    max-width: 600px;
+    line-height: 1.7;
+  }
+
+  /* ── WHY ── */
+  .why {
+    padding: 120px 60px;
+    background: var(--black);
+  }
+  .why-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .why-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .why-card {
+    background: var(--grey);
+    border: 1px solid var(--grey2);
+    border-radius: 16px;
+    padding: 28px 24px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .why-card:hover {
+    border-color: var(--purple);
+    transform: translateY(-4px);
+  }
+  .why-card-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  .why-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .why-card p {
+    font-size: 14px;
+    color: rgba(240,240,255,0.55);
+    line-height: 1.6;
+  }
+
+  /* ── CODE TERMINAL ── */
+  .terminal-section {
+    padding: 80px 60px;
+    background: linear-gradient(180deg, var(--black) 0%, rgba(124,58,237,0.05) 50%, var(--black) 100%);
+  }
+  .terminal-section-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .terminal {
+    background: #0E0E1A;
+    border: 1px solid var(--grey2);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(124,58,237,0.2);
+  }
+  .terminal-bar {
+    background: #1A1A2E;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--grey2);
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #FF5F57; }
+  .dot-y { background: #FEBC2E; }
+  .dot-g { background: #28C840; }
+  .terminal-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: rgba(240,240,255,0.4);
+    margin-right: auto;
+    margin-left: auto;
+  }
+  .terminal-body {
+    padding: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 2;
+    min-height: 280px;
+  }
+  .t-comment { color: #4B5563; }
+  .t-keyword { color: #A855F7; }
+  .t-func { color: #00FF88; }
+  .t-str { color: #FCD34D; }
+  .t-var { color: #60A5FA; }
+  .t-punct { color: rgba(240,240,255,0.5); }
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 16px;
+    background: var(--green);
+    animation: blink 1s infinite;
+    vertical-align: middle;
+  }
+
+  /* ── ROLES ── */
+  .roles {
+    padding: 120px 60px;
+    background: var(--black);
+  }
+  .roles-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .roles-header {
+    text-align: center;
+    margin-bottom: 64px;
+  }
+  .roles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  .role-card {
+    background: var(--grey);
+    border: 1px solid var(--grey2);
+    border-radius: 20px;
+    padding: 36px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .role-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--purple), var(--green));
+    transform: scaleX(0);
+    transition: transform 0.3s;
+  }
+  .role-card:hover::before { transform: scaleX(1); }
+  .role-card:hover {
+    border-color: rgba(124,58,237,0.5);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(124,58,237,0.2);
+  }
+  .role-icon { font-size: 40px; margin-bottom: 16px; }
+  .role-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .role-card p {
+    font-size: 13px;
+    color: rgba(240,240,255,0.5);
+    line-height: 1.6;
+  }
+  .role-tag {
+    display: inline-block;
+    margin-top: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    background: rgba(0,255,136,0.1);
+    color: var(--green);
+  }
+
+  /* ── MONEY SECTION ── */
+  .money {
+    padding: 100px 60px;
+    background: linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(0,255,136,0.05) 100%);
+    border-top: 1px solid rgba(124,58,237,0.2);
+    border-bottom: 1px solid rgba(124,58,237,0.2);
+  }
+  .money-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .stat-box {
+    background: rgba(8,8,16,0.6);
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 16px;
+    padding: 28px;
+  }
+  .stat-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--green);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-label {
+    font-size: 14px;
+    color: rgba(240,240,255,0.5);
+  }
+
+  /* ── JOIN ── */
+  .join {
+    padding: 140px 60px;
+    text-align: center;
+    background: var(--black);
+    position: relative;
+    overflow: hidden;
+  }
+  .join::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .join-inner { position: relative; z-index: 2; max-width: 700px; margin: 0 auto; }
+  .join h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+  }
+  .join p {
+    font-size: 18px;
+    color: rgba(240,240,255,0.6);
+    margin-bottom: 48px;
+    line-height: 1.7;
+  }
+  .join-form {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .join-input {
+    background: var(--grey);
+    border: 1px solid var(--grey2);
+    color: var(--white);
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: 'Heebo', sans-serif;
+    width: 280px;
+    outline: none;
+    transition: border-color 0.2s;
+    text-align: right;
+  }
+  .join-input:focus { border-color: var(--purple); }
+  .join-input::placeholder { color: rgba(240,240,255,0.3); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--grey);
+    border-top: 1px solid var(--grey2);
+    padding: 40px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 5;
+  }
+  footer .logo { font-size: 18px; }
+  footer p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: rgba(240,240,255,0.3);
+  }
+
+  /* ── FLOATING PARTICLES ── */
+  .particles {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: rise linear infinite;
+    opacity: 0;
+  }
+  @keyframes rise {
+    0% { transform: translateY(100vh) scale(0); opacity: 0; }
+    10% { opacity: 0.8; }
+    90% { opacity: 0.4; }
+    100% { transform: translateY(-20px) scale(1.5); opacity: 0; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    nav ul { display: none; }
+    .why-inner, .terminal-section-inner, .money-inner { grid-template-columns: 1fr; gap: 40px; }
+    .why, .roles, .money, .join, .terminal-section { padding: 80px 24px; }
+    footer { flex-direction: column; gap: 12px; text-align: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker, .particle, .scroll-hint { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- PARTICLES -->
+<div class="particles" id="particles"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Young<span>Devs</span></div>
+  <ul>
+    <li><a href="#why">למה אנחנו</a></li>
+    <li><a href="#roles">תפקידים</a></li>
+    <li><a href="#money">הכסף</a></li>
+    <li><a href="#join" class="nav-cta">הצטרף עכשיו</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="video-bg">
+    <!-- Animated code background via canvas -->
+    <canvas id="code-canvas" style="width:100%;height:100%;position:absolute;inset:0;opacity:0.5;"></canvas>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <div class="badge-dot"></div>
+      <span>// מגייסים עכשיו · כל הארץ</span>
+    </div>
+
+    <h1>
+      <span class="line-green">הפסק לגלול.</span>
+      <span class="line-purple">התחל לבנות.</span>
+      <span>תרוויח כסף אמיתי.</span>
+    </h1>
+
+    <p class="hero-sub">
+      חברת בניית אתרים שמנוהלת <strong>לגמרי על ידי נוער</strong>.<br>
+      מנהלים, מפתחים, מעצבים, אנשי מכירות — הכל אנחנו.
+    </p>
+
+    <div class="hero-btns">
+      <a href="#join" class="btn-primary">🚀 אני רוצה להצטרף</a>
+      <a href="#roles" class="btn-secondary">← גלה את התפקידים</a>
+    </div>
+  </div>
+
+  <div class="scroll-hint">scroll</div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <div class="ticker-item"><span>→</span> HTML · CSS · JavaScript</div>
+    <div class="ticker-item"><span>→</span> React · Next.js · Node.js</div>
+    <div class="ticker-item"><span>→</span> UI/UX Design · Figma</div>
+    <div class="ticker-item"><span>→</span> SEO · Marketing</div>
+    <div class="ticker-item"><span>→</span> Sales · Management</div>
+    <div class="ticker-item"><span>→</span> 3D · Animation</div>
+    <!-- duplicate for loop -->
+    <div class="ticker-item"><span>→</span> HTML · CSS · JavaScript</div>
+    <div class="ticker-item"><span>→</span> React · Next.js · Node.js</div>
+    <div class="ticker-item"><span>→</span> UI/UX Design · Figma</div>
+    <div class="ticker-item"><span>→</span> SEO · Marketing</div>
+    <div class="ticker-item"><span>→</span> Sales · Management</div>
+    <div class="ticker-item"><span>→</span> 3D · Animation</div>
+  </div>
+</div>
+
+<!-- WHY -->
+<section class="why" id="why">
+  <div class="why-inner">
+    <div>
+      <div class="section-eyebrow">// למה YoungDevs</div>
+      <h2 class="section-title">אין סיבה<br>לחכות<br>לגיל <em>18.</em></h2>
+      <p class="section-sub">
+        אם אתה בן 15 ואתה יודע לבנות אתר — מגיע לך לקבל עליו כסף.
+        אנחנו הראשונים שנותנים לנוער פלטפורמה עסקית רצינית.
+      </p>
+    </div>
+    <div class="why-cards">
+      <div class="why-card">
+        <div class="why-card-icon">💰</div>
+        <h3>הכנסה אמיתית</h3>
+        <p>אחוזים מכל פרויקט. לא מלגה — שכר.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-card-icon">🌍</div>
+        <h3>כל הארץ</h3>
+        <p>עובדים ריימוט. לא משנה אם אתה בתל אביב או אשקלון.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-card-icon">🧠</div>
+        <h3>לומדים תוך כדי</h3>
+        <p>מנטורים, קורסים פנימיים, פרויקטים אמיתיים.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-card-icon">📈</div>
+        <h3>מסלול מנהל</h3>
+        <p>התחל כמפתח — תגיע למנהל צוות תוך שנה.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TERMINAL -->
+<section class="terminal-section">
+  <div class="terminal-section-inner">
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <div class="terminal-title">youngdevs · project-1</div>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-comment">// מה שנבנה יחד</span></div>
+        <div>&nbsp;</div>
+        <div><span class="t-keyword">const</span> <span class="t-var">team</span> <span class="t-punct">= {</span></div>
+        <div>&nbsp;&nbsp;<span class="t-func">role</span><span class="t-punct">:</span> <span class="t-str">"מנהל פרויקט"</span><span class="t-punct">,</span></div>
+        <div>&nbsp;&nbsp;<span class="t-func">age</span><span class="t-punct">:</span> <span class="t-str">17</span><span class="t-punct">,</span></div>
+        <div>&nbsp;&nbsp;<span class="t-func">salary</span><span class="t-punct">:</span> <span class="t-str">"₪4,500/חודש"</span><span class="t-punct">,</span></div>
+        <div>&nbsp;&nbsp;<span class="t-func">location</span><span class="t-punct">:</span> <span class="t-str">"ריימוט 🌐"</span></div>
+        <div><span class="t-punct">};</span></div>
+        <div>&nbsp;</div>
+        <div><span class="t-keyword">function</span> <span class="t-func">joinUs</span><span class="t-punct">() {</span></div>
+        <div>&nbsp;&nbsp;<span class="t-keyword">return</span> <span class="t-str">"עתיד טוב יותר"</span><span class="t-punct">;</span></div>
+        <div><span class="t-punct">}</span></div>
+        <div>&nbsp;</div>
+        <div><span class="t-func">joinUs</span><span class="t-punct">();</span> <span class="cursor"></span></div>
+      </div>
+    </div>
+    <div>
+      <div class="section-eyebrow">// טכנולוגיה אמיתית</div>
+      <h2 class="section-title">לא תיאוריה.<br><em>קוד שמרוויח.</em></h2>
+      <p class="section-sub">
+        כל אתר שנמסור ללקוח — נבנה על ידי הצוות שלנו.
+        אתה לא סטאז'יר. אתה שותף.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ROLES -->
+<section class="roles" id="roles">
+  <div class="roles-inner">
+    <div class="roles-header">
+      <div class="section-eyebrow">// בחר את הדרך שלך</div>
+      <h2 class="section-title">כל אחד <em>שייך</em> לאן שהוא.</h2>
+      <p class="section-sub" style="margin: 0 auto;">לא חייב להיות מתכנת. יש מקום לכולם.</p>
+    </div>
+    <div class="roles-grid">
+      <div class="role-card">
+        <div class="role-icon">💻</div>
+        <h3>מפתח</h3>
+        <p>בניית אתרים ואפליקציות. Frontend, Backend, Fullstack.</p>
+        <span class="role-tag">Dev</span>
+      </div>
+      <div class="role-card">
+        <div class="role-icon">🎨</div>
+        <h3>מעצב</h3>
+        <p>UI/UX, גרפיקה, מיתוג. Figma, Canva, Adobe.</p>
+        <span class="role-tag">Design</span>
+      </div>
+      <div class="role-card">
+        <div class="role-icon">📣</div>
+        <h3>מוכר</h3>
+        <p>גיוס לקוחות, משא ומתן, עמלות גבוהות.</p>
+        <span class="role-tag">Sales</span>
+      </div>
+      <div class="role-card">
+        <div class="role-icon">🗂️</div>
+        <h3>מנהל פרויקט</h3>
+        <p>ניהול צוותים, לוחות זמנים, תיאום עם לקוחות.</p>
+        <span class="role-tag">PM</span>
+      </div>
+      <div class="role-card">
+        <div class="role-icon">🖥️</div>
+        <h3>הנדסאי מחשבים</h3>
+        <p>תשתיות, שרתים, אבטחה, DevOps.</p>
+        <span class="role-tag">Engineering</span>
+      </div>
+      <div class="role-card">
+        <div class="role-icon">📊</div>
+        <h3>מנהל אזורי</h3>
+        <p>אחראי על סניף מקומי. תפקיד בכיר עם אחוזים גדולים.</p>
+        <span class="role-tag">Lead</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MONEY -->
+<section class="money" id="money">
+  <div class="money-inner">
+    <div>
+      <div class="section-eyebrow">// המספרים לא משקרים</div>
+      <h2 class="section-title">כסף אמיתי.<br><em>עוד בלימודים.</em></h2>
+      <p class="section-sub">
+        השוק בוער. עסקים קטנים משלמים אלפי שקלים על אתר.
+        אנחנו חוטפים את השוק הזה — ואתה שותף.
+      </p>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">ריימוט — עובדים מהבית</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">פוטנציאל — אין תקרת זכוכית</div>
+      </div>
+      <div class="stat-box" style="grid-column: span 2;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green);letter-spacing:2px;margin-bottom:16px;">// צור קשר עכשיו</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <a href="https://instagram.com/gal_240210" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);border-radius:12px;padding:14px 20px;text-decoration:none;color:var(--white);font-weight:700;font-size:15px;transition:all 0.2s;flex:1;" onmouseover="this.style.borderColor='var(--purple-light)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(124,58,237,0.4)';this.style.transform='translateY(0)'">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+            @gal_240210
+          </a>
+          <a href="tel:0535681189" style="display:flex;align-items:center;gap:10px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.35);border-radius:12px;padding:14px 20px;text-decoration:none;color:var(--white);font-weight:700;font-size:15px;transition:all 0.2s;flex:1;" onmouseover="this.style.borderColor='var(--green)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(0,255,136,0.35)';this.style.transform='translateY(0)'">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.66A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            053-568-1189
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section style="padding:100px 60px;background:var(--black);position:relative;z-index:5;">
+  <div style="max-width:800px;margin:0 auto;text-align:center;">
+    <div class="section-eyebrow">// איך זה עובד</div>
+    <h2 class="section-title">שלושה צעדים.<br><em>דיל פשוט.</em></h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:48px;text-align:right;">
+      <div style="background:var(--grey);border:1px solid var(--grey2);border-radius:20px;padding:32px 28px;position:relative;overflow:hidden;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:48px;font-weight:700;color:rgba(124,58,237,0.15);position:absolute;top:16px;left:20px;line-height:1;">01</div>
+        <div style="font-size:32px;margin-bottom:16px;">🤝</div>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;margin-bottom:10px;">מצא לקוח</h3>
+        <p style="font-size:14px;color:rgba(240,240,255,0.55);line-height:1.7;">מכיר עסק שצריך אתר? חנות, מסעדה, בית עסק — כל אחד. אתה מציע, אתה מוכר.</p>
+      </div>
+      <div style="background:var(--grey);border:1px solid var(--grey2);border-radius:20px;padding:32px 28px;position:relative;overflow:hidden;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:48px;font-weight:700;color:rgba(124,58,237,0.15);position:absolute;top:16px;left:20px;line-height:1;">02</div>
+        <div style="font-size:32px;margin-bottom:16px;">📲</div>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;margin-bottom:10px;">מעביר לגל</h3>
+        <p style="font-size:14px;color:rgba(240,240,255,0.55);line-height:1.7;">שולח פרטים לגל — הוא בונה את האתר, מטפל בלקוח, מסיים את העסקה. אתה לא צריך לדעת לבנות כלום.</p>
+      </div>
+      <div style="background:var(--grey);border:1px solid rgba(0,255,136,0.3);border-radius:20px;padding:32px 28px;position:relative;overflow:hidden;box-shadow:0 0 30px rgba(0,255,136,0.08);">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:48px;font-weight:700;color:rgba(0,255,136,0.1);position:absolute;top:16px;left:20px;line-height:1;">03</div>
+        <div style="font-size:32px;margin-bottom:16px;">💸</div>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;margin-bottom:10px;">מקבל 40%</h3>
+        <p style="font-size:14px;color:rgba(240,240,255,0.55);line-height:1.7;">הלקוח משלם — אתה מקבל <strong style="color:var(--green)">40% מהסכום</strong> ישירות. פשוט, מהיר, אמין.</p>
+      </div>
+    </div>
+    <div style="margin-top:40px;background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.2);border-radius:16px;padding:24px 32px;font-family:'JetBrains Mono',monospace;font-size:14px;color:rgba(240,240,255,0.6);line-height:1.8;">
+      <span style="color:var(--green)">// דוגמה:</span> אתר עולה ללקוח ₪2,000 → אתה מקבל <strong style="color:var(--white)">₪800</strong> על שיחה אחת.
+    </div>
+  </div>
+</section>
+
+<!-- JOIN -->
+<section class="join" id="join">
+  <div class="join-inner">
+    <div class="section-eyebrow">// ready to ship?</div>
+    <h2>הצטרף ל-<em style="color:var(--green)">YoungDevs</em></h2>
+    <p>השאיר פרטים ונחזור אליך תוך 24 שעות. ללא התחייבות. ממש ללא מה לאבד.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;">
+      <a href="https://instagram.com/gal_240210" target="_blank" class="btn-primary" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        DM באינסטגרם
+      </a>
+      <a href="tel:0535681189" class="btn-secondary" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.66A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        התקשר: 053-568-1189
+      </a>
+    </div>
+    <p style="margin-top:12px;font-size:13px;color:rgba(240,240,255,0.3);font-family:'JetBrains Mono',monospace;">
+      // מחכה לשמוע ממך 🚀
+    </p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">Young<span>Devs</span></div>
+  <p>// בונים את האינטרנט של מחר — עוד היום.</p>
+  <p style="color:rgba(240,240,255,0.2);">© 2025 YoungDevs · Israel</p>
+</footer>
+
+<script>
+// ── PARTICLES ──
+(function() {
+  const container = document.getElementById('particles');
+  const colors = ['#00FF88', '#7C3AED', '#A855F7', '#60A5FA'];
+  for (let i = 0; i < 35; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 3 + 1;
+    p.style.cssText = `
+      left: ${Math.random() * 100}%;
+      width: ${size}px;
+      height: ${size}px;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      animation-duration: ${Math.random() * 12 + 8}s;
+      animation-delay: ${Math.random() * 10}s;
+    `;
+    container.appendChild(p);
+  }
+})();
+
+// ── CODE RAIN CANVAS ──
+(function() {
+  const canvas = document.getElementById('code-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const chars = 'アイウエオカキクケコABCDEFGHIJKLMNOP0123456789{}[]();=></>const let function return import export'.split('');
+  const fontSize = 14;
+  let cols = Math.floor(canvas.width / fontSize);
+  let drops = Array(cols).fill(1);
+
+  function draw() {
+    ctx.fillStyle = 'rgba(8,8,16,0.04)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = `${fontSize}px JetBrains Mono, monospace`;
+
+    for (let i = 0; i < drops.length; i++) {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      const brightness = Math.random();
+      if (brightness > 0.95) {
+        ctx.fillStyle = '#ffffff';
+      } else if (brightness > 0.7) {
+        ctx.fillStyle = '#00FF88';
+      } else {
+        ctx.fillStyle = 'rgba(0,200,100,0.4)';
+      }
+      ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  setInterval(draw, 45);
+})();
+
+// ── JOIN BUTTON ──
+function handleJoin(btn) {
+  btn.textContent = '✓ נשלח!';
+  btn.style.background = 'linear-gradient(135deg, #00CC6A, #00FF88)';
+  btn.style.color = '#080810';
+  setTimeout(() => {
+    btn.textContent = 'שלח ←';
+    btn.style.background = '';
+    btn.style.color = '';
+  }, 3000);
+}
+
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.why-card, .role-card, .stat-box').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(24px)';
+  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
